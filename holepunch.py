@@ -10,7 +10,7 @@ def get_ip():
 
 
 def get_time():
-    return str(datetime.now()).split()[1].split(".")[0]+" "
+    return str(datetime.now()).split()[1].split(".")[0]
 
 
 NAT_HOLEPUNCH_ACCEPT_TIMEOUT = 1
@@ -18,10 +18,10 @@ NAT_HOLEPUNCH_TIMEOUT = 2
 
 class Accept_Thread(threading.Thread):
 
-    def __init__(self, port, thread_id):
+    def __init__(self, port: int, thread_id: int):
         threading.Thread.__init__(self)
         self.thread_id = thread_id
-        self.debug("Initializing ACCEPT thread for port:" + str(port) + "...")
+        self.debug(f"Initializing ACCEPT thread for port: {port}...")
         self.running = False
         self.peer_conn = None
         self.peer_addr = None
@@ -31,14 +31,14 @@ class Accept_Thread(threading.Thread):
         self.debug("Setting socket options...")
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-        self.debug("Binding socket to " + get_ip() + ":" + str(port))
+        self.debug(f"Binding socket to {get_ip()}:{port}")
         self.s.bind((get_ip(), port))
         self.debug("Setting socket to listening settings...")
         self.s.listen(1)
         self.s.settimeout(NAT_HOLEPUNCH_ACCEPT_TIMEOUT)
 
-    def debug(self, a):
-        print(get_time() + "ACCEPT THREAD " + str(self.thread_id) + ": " + a)
+    def debug(self, a: str):
+        print(f"{get_time()} ACCEPT THREAD {self.thread_id}: {a}")
 
     def run(self):
         self.debug("Awaiting peer connection...")
@@ -46,7 +46,7 @@ class Accept_Thread(threading.Thread):
         while self.running:
             try:
                 self.peer_conn, self.peer_addr = self.s.accept()
-                self.debug("Peer connection received from " + self.peer_addr[0] + ":" + str(self.peer_addr[1]) + ". Exiting thread loop...")
+                self.debug(f"Peer connection received from {self.peer_addr[0]}:{self.peeer_addr[1]}. Exiting thread loop...")
                 self.running = False
                 self.return_value = (self.peer_conn, self.peer_addr)
             except socket.timeout:
@@ -59,7 +59,7 @@ class Connect_Thread(threading.Thread):
     def __init__(self, client_private_endpoint, peer_endpoint, thread_id):
         threading.Thread.__init__(self)
         self.thread_id = thread_id
-        self.debug("Initializing CONNECT thread for connection between " + client_private_endpoint[0] + ":" + str(client_private_endpoint[1]) + " and " + peer_endpoint[0] + ":" + str(peer_endpoint[1]) + "...")
+        self.debug(f"Initializing CONNECT thread for connection between {client_private_endpoint[0]}:{client_private_endpoint[1]} and {peer_endpoint[0]}:{peer_endpoint[1]}...")
         self.running = False
         self.return_value = None
         self.peer_endpoint = peer_endpoint
@@ -69,14 +69,14 @@ class Connect_Thread(threading.Thread):
         self.debug("Setting socket options...")
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-        self.debug("Binding socket to " + client_private_endpoint[0] + ":" + str(client_private_endpoint[1]))
+        self.debug(f"Binding socket to {client_private_endpoint[0]}:{client_private_endpoint[1]}...")
         self.s.bind(client_private_endpoint)
 
-    def debug(self, a):
-        print(get_time() + "CONNECT THREAD " + str(self.thread_id) + ": " + a)
+    def debug(self, a: str):
+        print(f"{get_time()} CONNECT THREAD {self.thread_id}: {a}")
 
     def run(self):
-        self.debug("Attempting to connect to peer at " + self.peer_endpoint[0] + ":" + str(self.peer_endpoint[1]) + "...")
+        self.debug(f"Attempting to connect to peer at {self.peer_endpoint[0]}:{self.peer_endpoint[1]}...")
         self.running = True
         while self.running:
             try:
